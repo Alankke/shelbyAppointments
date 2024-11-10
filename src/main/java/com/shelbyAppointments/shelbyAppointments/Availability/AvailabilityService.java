@@ -81,7 +81,6 @@ public class AvailabilityService {
         }
     }
 
-    // New method to check existing appointments
     private void validateHairdresserAppointments(LocalDate date, String time, String hairdresserId) {
         boolean hasAppointment = appointmentRepository
                 .existsByDateAndTimeAndStylistAndStatusNot(

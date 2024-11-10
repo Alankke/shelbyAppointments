@@ -28,7 +28,7 @@ public class AppointmentService {
         appointment.setEmail(request.getEmail());
         appointment.setPhone(request.getPhone());
         appointment.setService(request.getService());
-        appointment.setStylist(request.getStylist());  // Add this line
+        appointment.setStylist(request.getStylist());
         appointment.setDate(LocalDate.parse(request.getDate()));
         appointment.setTime(request.getTime());
         appointment.setStatus(AppointmentStatus.PENDING);
