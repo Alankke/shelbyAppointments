@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -50,8 +51,15 @@ public class AvailabilityService {
     public StoreClosure setStoreClosed(StoreClosureDTO request) {
         StoreClosure storeClosure = new StoreClosure();
         storeClosure.setDate(LocalDate.parse(request.getDate()));
-        storeClosure.setReason(request.getReason());
+        storeClosure.setFullDay(request.isFullDay());
 
+        if (!request.isFullDay()) {
+            validateTimeRange(request.getStartTime(), request.getEndTime());
+            storeClosure.setStartTime(request.getStartTime());
+            storeClosure.setEndTime(request.getEndTime());
+        }
+
+        storeClosure.setReason(request.getReason());
         return storeClosureRepository.save(storeClosure);
     }
 
@@ -61,15 +69,29 @@ public class AvailabilityService {
 
     public void validateAvailability(String dateStr, String time, String hairdresserId) {
         LocalDate date = LocalDate.parse(dateStr);
-        validateStoreAvailability(date);
+        validateStoreAvailability(date, time);
         validateHairdresserDayOff(date, hairdresserId);
         validateHairdresserAppointments(date, time, hairdresserId);
     }
 
-    private void validateStoreAvailability(LocalDate date) {
-        boolean isStoreClosed = storeClosureRepository.existsByDate(date);
-        if (isStoreClosed) {
-            throw new StoreClosedException(date);
+    private void validateStoreAvailability(LocalDate date, String time) {
+        List<StoreClosure> closures = storeClosureRepository.findByDate(date);
+
+        for (StoreClosure closure : closures) {
+            if (closure.isFullDay()) {
+                throw new StoreClosedException(date);
+            }
+
+            // Check if the requested time falls within a partial closure period
+            if (!closure.isFullDay() && time != null) {
+                LocalTime appointmentTime = LocalTime.parse(time);
+                LocalTime closureStart = LocalTime.parse(closure.getStartTime());
+                LocalTime closureEnd = LocalTime.parse(closure.getEndTime());
+
+                if (!appointmentTime.isBefore(closureStart) && !appointmentTime.isAfter(closureEnd)) {
+                    throw new StoreClosedException(date, closure.getStartTime(), closure.getEndTime());
+                }
+            }
         }
     }
 
@@ -93,4 +115,19 @@ public class AvailabilityService {
             throw new HairdresserUnavailableException(hairdresserId, date, time);
         }
     }
-} 
+
+    private void validateTimeRange(String startTime, String endTime) {
+        if (startTime == null || endTime == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start time and end time are required for partial day closures");
+        }
+
+        LocalTime start = LocalTime.parse(startTime);
+        LocalTime end = LocalTime.parse(endTime);
+
+        if (!start.isBefore(end)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start time must be before end time");
+        }
+    }
+}

@@ -18,6 +18,9 @@ public class StoreClosure {
     private String id;
 
     private LocalDate date;
+    private boolean fullDay;
+    private String startTime;
+    private String endTime;
     private String reason;
 
     @CreationTimestamp

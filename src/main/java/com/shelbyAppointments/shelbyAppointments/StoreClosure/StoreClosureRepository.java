@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface StoreClosureRepository extends JpaRepository<StoreClosure, String> {
     List<StoreClosure> findByDateGreaterThanEqual(LocalDate date);
-
+    List<StoreClosure> findByDate(LocalDate date);
     boolean existsByDate(LocalDate date);
 }
