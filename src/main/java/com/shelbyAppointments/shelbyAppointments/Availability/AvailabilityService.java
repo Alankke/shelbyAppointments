@@ -32,6 +32,14 @@ public class AvailabilityService {
 
         unavailability.setHairdresserId(request.getHairdresserId());
         unavailability.setDate(LocalDate.parse(request.getDate()));
+        unavailability.setFullDay(request.isFullDay());
+
+        if (!request.isFullDay()) {
+            validateTimeRange(request.getStartTime(), request.getEndTime());
+            unavailability.setStartTime(request.getStartTime());
+            unavailability.setEndTime(request.getEndTime());
+        }
+
         unavailability.setReason(request.getReason());
 
         return unavailabilityRepository.save(unavailability);
@@ -70,7 +78,7 @@ public class AvailabilityService {
     public void validateAvailability(String dateStr, String time, String hairdresserId) {
         LocalDate date = LocalDate.parse(dateStr);
         validateStoreAvailability(date, time);
-        validateHairdresserDayOff(date, hairdresserId);
+        validateHairdresserDayOff(date, time, hairdresserId);
         validateHairdresserAppointments(date, time, hairdresserId);
     }
 
@@ -82,7 +90,6 @@ public class AvailabilityService {
                 throw new StoreClosedException(date);
             }
 
-            // Check if the requested time falls within a partial closure period
             if (!closure.isFullDay() && time != null) {
                 LocalTime appointmentTime = LocalTime.parse(time);
                 LocalTime closureStart = LocalTime.parse(closure.getStartTime());
@@ -95,11 +102,31 @@ public class AvailabilityService {
         }
     }
 
-    private void validateHairdresserDayOff(LocalDate date, String hairdresserId) {
-        boolean isHairdresserUnavailable = unavailabilityRepository
-                .existsByDateAndHairdresserId(date, hairdresserId);
-        if (isHairdresserUnavailable) {
-            throw new HairdresserUnavailableException(hairdresserId, date, null);
+    private void validateHairdresserDayOff(LocalDate date, String time, String hairdresserId) {
+        List<HairdresserUnavailability> unavailabilities = unavailabilityRepository
+                .findByDateAndHairdresserId(date, hairdresserId);
+
+        for (HairdresserUnavailability unavailability : unavailabilities) {
+            // If it's a full day unavailability, block everything
+            if (unavailability.isFullDay()) {
+                throw new HairdresserUnavailableException(hairdresserId, date, null);
+            }
+
+            // If it's a partial day unavailability and we have a specific time to check
+            if (!unavailability.isFullDay() && time != null) {
+                LocalTime appointmentTime = LocalTime.parse(time);
+                LocalTime unavailableStart = LocalTime.parse(unavailability.getStartTime());
+                LocalTime unavailableEnd = LocalTime.parse(unavailability.getEndTime());
+
+                // Only throw exception if the appointment time falls within the unavailable period
+                if (appointmentTime.compareTo(unavailableStart) >= 0 && appointmentTime.compareTo(unavailableEnd) < 0) {
+                    throw new HairdresserUnavailableException(
+                            hairdresserId,
+                            date,
+                            String.format("%s - %s", unavailability.getStartTime(), unavailability.getEndTime())
+                    );
+                }
+            }
         }
     }
 
