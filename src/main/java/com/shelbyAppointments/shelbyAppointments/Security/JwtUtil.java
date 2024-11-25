@@ -15,7 +15,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
     private final Key secret = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long jwtExpiration = 1000 * 60 * 60 * 24; // 24 hours
+    private final long jwtExpiration = 1000 * 60 * 60 * 24;
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
