@@ -6,7 +6,6 @@ com\shelbyAppointments\shelbyAppointments\ShelbyAppointmentsApplication.class
 com\shelbyAppointments\shelbyAppointments\Appointment\AppointmentRepository.class
 com\shelbyAppointments\shelbyAppointments\Auth\AuthController.class
 com\shelbyAppointments\shelbyAppointments\Security\JwtUtil.class
-com\shelbyAppointments\shelbyAppointments\Service\ServiceRepository.class
 com\shelbyAppointments\shelbyAppointments\Availability\AvailabilityController.class
 com\shelbyAppointments\shelbyAppointments\Exception\ErrorResponse.class
 com\shelbyAppointments\shelbyAppointments\StoreClosure\StoreClosureDTO.class
@@ -18,7 +17,6 @@ com\shelbyAppointments\shelbyAppointments\Availability\AvailabilityService.class
 com\shelbyAppointments\shelbyAppointments\StoreClosure\StoreClosureRepository.class
 com\shelbyAppointments\shelbyAppointments\Availability\HairdresserUnavailability.class
 com\shelbyAppointments\shelbyAppointments\Appointment\AppointmentStatus.class
-com\shelbyAppointments\shelbyAppointments\Service\Service.class
 com\shelbyAppointments\shelbyAppointments\Security\SecurityConfig.class
 com\shelbyAppointments\shelbyAppointments\Exception\HairdresserUnavailableException.class
 com\shelbyAppointments\shelbyAppointments\Appointment\AppointmentService.class
