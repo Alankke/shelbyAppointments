@@ -1,6 +1,8 @@
 package com.shelbyAppointments.shelbyAppointments.Security;
 
 import com.shelbyAppointments.shelbyAppointments.User.UserService;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +29,9 @@ public class SecurityConfig {
     private final UserService userService;
     private final JwtAuthenticationFilter jwtAuthFilter;
 
+    @Value("${CORS_ALLOWED_ORIGINS:https://shelbyturnos.vercel.app}")
+    private String corsAllowedOrigins;
+
     public SecurityConfig(UserService userService, JwtAuthenticationFilter jwtAuthFilter) {
         this.userService = userService;
         this.jwtAuthFilter = jwtAuthFilter;
@@ -52,8 +57,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "https://shelbyturnos.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList(corsAllowedOrigins));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
